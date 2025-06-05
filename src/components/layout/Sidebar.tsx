@@ -17,6 +17,8 @@ import {
   Briefcase,
   FileText,
   ChevronRight,
+  CheckSquare,
+  Megaphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -34,11 +36,13 @@ const menuItems = [
   { id: 'accounts', label: 'Accounts', icon: Building2, roles: ['user', 'manager', 'admin'] },
   { id: 'opportunities', label: 'Opportunities', icon: Target, roles: ['user', 'manager', 'admin'] },
   { id: 'calendar', label: 'Calendar', icon: Calendar, roles: ['user', 'manager', 'admin'] },
-  { id: 'emails', label: 'Emails', icon: Mail, roles: ['user', 'manager', 'admin'] },
-  { id: 'calls', label: 'Calls', icon: Phone, roles: ['user', 'manager', 'admin'] },
-  { id: 'products', label: 'Products', icon: Briefcase, roles: ['manager', 'admin'] },
-  { id: 'reports', label: 'Reports', icon: BarChart3, roles: ['manager', 'admin'] },
+  { id: 'emails', label: 'Email Center', icon: Mail, roles: ['user', 'manager', 'admin'] },
+  { id: 'calls', label: 'Call Center', icon: Phone, roles: ['user', 'manager', 'admin'] },
+  { id: 'tasks', label: 'Tasks', icon: CheckSquare, roles: ['user', 'manager', 'admin'] },
+  { id: 'products', label: 'Products & Services', icon: Briefcase, roles: ['manager', 'admin'] },
+  { id: 'campaigns', label: 'Campaigns', icon: Megaphone, roles: ['manager', 'admin'] },
   { id: 'quotes', label: 'Quotes', icon: FileText, roles: ['user', 'manager', 'admin'] },
+  { id: 'reports', label: 'Reports', icon: BarChart3, roles: ['manager', 'admin'] },
   { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
 ];
 
@@ -88,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, collap
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {filteredMenuItems.map((item) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;

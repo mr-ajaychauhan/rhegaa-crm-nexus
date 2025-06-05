@@ -4,6 +4,16 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Dashboard } from '../dashboard/Dashboard';
 import { LeadsList } from '../leads/LeadsList';
+import { ContactsList } from '../contacts/ContactsList';
+import { AccountsList } from '../accounts/AccountsList';
+import { OpportunitiesList } from '../opportunities/OpportunitiesList';
+import { CalendarView } from '../calendar/CalendarView';
+import { EmailCenter } from '../email/EmailCenter';
+import { CallCenter } from '../calls/CallCenter';
+import { ProductsList } from '../products/ProductsList';
+import { TaskManagement } from '../tasks/TaskManagement';
+import { CampaignManagement } from '../campaigns/CampaignManagement';
+import { QuoteManagement } from '../quotes/QuoteManagement';
 import { cn } from '@/lib/utils';
 
 export const Layout: React.FC = () => {
@@ -17,66 +27,30 @@ export const Layout: React.FC = () => {
       case 'leads':
         return <LeadsList />;
       case 'contacts':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Contacts</h1>
-            <p className="text-gray-600 mt-2">Contact management coming soon...</p>
-          </div>
-        );
+        return <ContactsList />;
       case 'accounts':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Accounts</h1>
-            <p className="text-gray-600 mt-2">Account management coming soon...</p>
-          </div>
-        );
+        return <AccountsList />;
       case 'opportunities':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Opportunities</h1>
-            <p className="text-gray-600 mt-2">Opportunity management coming soon...</p>
-          </div>
-        );
+        return <OpportunitiesList />;
       case 'calendar':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Calendar</h1>
-            <p className="text-gray-600 mt-2">Calendar integration coming soon...</p>
-          </div>
-        );
+        return <CalendarView />;
       case 'emails':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Email Center</h1>
-            <p className="text-gray-600 mt-2">Email management coming soon...</p>
-          </div>
-        );
+        return <EmailCenter />;
       case 'calls':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Call Center</h1>
-            <p className="text-gray-600 mt-2">Call management coming soon...</p>
-          </div>
-        );
+        return <CallCenter />;
       case 'products':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Products & Services</h1>
-            <p className="text-gray-600 mt-2">Product catalog coming soon...</p>
-          </div>
-        );
+        return <ProductsList />;
+      case 'tasks':
+        return <TaskManagement />;
+      case 'campaigns':
+        return <CampaignManagement />;
+      case 'quotes':
+        return <QuoteManagement />;
       case 'reports':
         return (
           <div className="p-6">
             <h1 className="text-2xl font-bold">Reports & Analytics</h1>
             <p className="text-gray-600 mt-2">Advanced reporting coming soon...</p>
-          </div>
-        );
-      case 'quotes':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold">Quote Management</h1>
-            <p className="text-gray-600 mt-2">Quote generation coming soon...</p>
           </div>
         );
       case 'settings':
@@ -99,11 +73,13 @@ export const Layout: React.FC = () => {
       accounts: 'Accounts',
       opportunities: 'Opportunities',
       calendar: 'Calendar',
-      emails: 'Emails',
-      calls: 'Calls',
-      products: 'Products',
-      reports: 'Reports',
+      emails: 'Email Center',
+      calls: 'Call Center',
+      products: 'Products & Services',
+      tasks: 'Tasks',
+      campaigns: 'Campaigns',
       quotes: 'Quotes',
+      reports: 'Reports',
       settings: 'Settings',
     };
     return titles[activeTab] || 'Dashboard';
