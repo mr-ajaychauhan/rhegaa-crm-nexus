@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -20,16 +20,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { 
   Plus, 
   Search, 
-  CheckSquare, 
-  Clock, 
+  Download, 
+  Eye, 
+  Edit, 
+  Trash2,
+  CheckSquare,
+  Clock,
   AlertTriangle,
   User,
-  Calendar,
-  Edit,
-  Trash2
+  Calendar
 } from 'lucide-react';
 import { Task } from '@/types/crm';
 
@@ -37,36 +47,37 @@ const mockTasks: Task[] = [
   {
     id: '1',
     title: 'Follow up with ABC Corp lead',
-    description: 'Call John Smith to discuss enterprise pricing',
+    description: 'Call John Smith to discuss pricing and next steps',
     priority: 'high',
     status: 'pending',
-    assignedTo: 'John Doe',
-    dueDate: '2024-01-18',
+    assignedTo: 'Sales Rep 1',
+    dueDate: '2024-01-20',
     createdAt: '2024-01-15T09:00:00Z',
-    updatedAt: '2024-01-15T09:00:00Z',
+    updatedAt: '2024-01-16T10:00:00Z',
   },
   {
     id: '2',
-    title: 'Prepare proposal for XYZ Technology',
-    description: 'Create detailed proposal including implementation timeline',
-    priority: 'urgent',
+    title: 'Prepare demo presentation',
+    description: 'Create customized demo for XYZ Technology',
+    priority: 'medium',
     status: 'in-progress',
-    assignedTo: 'Jane Smith',
-    dueDate: '2024-01-17',
+    assignedTo: 'Sales Rep 2',
+    dueDate: '2024-01-18',
     projectId: 'proj-1',
-    createdAt: '2024-01-14T10:00:00Z',
-    updatedAt: '2024-01-16T14:00:00Z',
+    dependencies: ['1'],
+    createdAt: '2024-01-14T08:00:00Z',
+    updatedAt: '2024-01-16T11:00:00Z',
   },
   {
     id: '3',
     title: 'Update CRM documentation',
-    description: 'Add new feature documentation',
-    priority: 'medium',
+    description: 'Review and update user guide documentation',
+    priority: 'low',
     status: 'completed',
-    assignedTo: 'Mike Wilson',
-    dueDate: '2024-01-16',
-    createdAt: '2024-01-10T08:00:00Z',
-    updatedAt: '2024-01-16T16:00:00Z',
+    assignedTo: 'Support Team',
+    dueDate: '2024-01-10',
+    createdAt: '2024-01-05T14:00:00Z',
+    updatedAt: '2024-01-10T16:00:00Z',
   },
 ];
 
@@ -75,15 +86,16 @@ export const TaskManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const getPriorityColor = (priority: Task['priority']) => {
     const colors = {
-      low: 'bg-gray-100 text-gray-800',
+      low: 'bg-green-100 text-green-800',
       medium: 'bg-yellow-100 text-yellow-800',
       high: 'bg-orange-100 text-orange-800',
       urgent: 'bg-red-100 text-red-800',
     };
-    return colors[priority] || 'bg-gray-100 text-gray-800';
+    return colors[priority];
   };
 
   const getStatusColor = (status: Task['status']) => {
@@ -93,15 +105,7 @@ export const TaskManagement: React.FC = () => {
       completed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const toggleTaskStatus = (taskId: string) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId 
-        ? { ...task, status: task.status === 'completed' ? 'pending' : 'completed' }
-        : task
-    ));
+    return colors[status];
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -113,14 +117,10 @@ export const TaskManagement: React.FC = () => {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
+  const totalTasks = tasks.length;
   const pendingTasks = tasks.filter(t => t.status === 'pending').length;
   const inProgressTasks = tasks.filter(t => t.status === 'in-progress').length;
   const completedTasks = tasks.filter(t => t.status === 'completed').length;
-  const overdueTasks = tasks.filter(t => {
-    const dueDate = new Date(t.dueDate);
-    const today = new Date();
-    return dueDate < today && t.status !== 'completed';
-  }).length;
 
   return (
     <div className="p-6 space-y-6">
@@ -128,13 +128,71 @@ export const TaskManagement: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
-          <p className="text-gray-600">Organize and track your tasks and projects</p>
+          <p className="text-gray-600">Manage personal and project tasks</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Task
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export
           </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Task
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New Task</DialogTitle>
+                <DialogDescription>
+                  Add a new task to your task list
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Title</label>
+                  <Input placeholder="Task title" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <Textarea placeholder="Task description" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Priority</label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Due Date</label>
+                    <Input type="date" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Assigned To</label>
+                  <Input placeholder="Assign to user" />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => setIsCreateDialogOpen(false)}>
+                    Create Task
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -142,11 +200,21 @@ export const TaskManagement: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+            <CheckSquare className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTasks}</div>
+            <p className="text-xs text-muted-foreground">All tasks</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending</CardTitle>
             <Clock className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks}</div>
+            <div className="text-2xl font-bold text-orange-600">{pendingTasks}</div>
             <p className="text-xs text-muted-foreground">Awaiting action</p>
           </CardContent>
         </Card>
@@ -155,28 +223,17 @@ export const TaskManagement: React.FC = () => {
             <CardTitle className="text-sm font-medium">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressTasks}</div>
+            <div className="text-2xl font-bold text-blue-600">{inProgressTasks}</div>
             <p className="text-xs text-muted-foreground">Currently working</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckSquare className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            <AlertTriangle className="w-4 h-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{overdueTasks}</div>
-            <p className="text-xs text-muted-foreground">Need attention</p>
+            <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
+            <p className="text-xs text-muted-foreground">Finished tasks</p>
           </CardContent>
         </Card>
       </div>
@@ -216,7 +273,7 @@ export const TaskManagement: React.FC = () => {
                 <SelectValue placeholder="Filter by priority" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="all">All Priorities</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
@@ -236,7 +293,6 @@ export const TaskManagement: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12">Done</TableHead>
                 <TableHead>Task</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
@@ -250,16 +306,8 @@ export const TaskManagement: React.FC = () => {
               {filteredTasks.map((task) => (
                 <TableRow key={task.id}>
                   <TableCell>
-                    <Checkbox
-                      checked={task.status === 'completed'}
-                      onCheckedChange={() => toggleTaskStatus(task.id)}
-                    />
-                  </TableCell>
-                  <TableCell>
                     <div>
-                      <div className={`font-medium ${task.status === 'completed' ? 'line-through text-gray-500' : ''}`}>
-                        {task.title}
-                      </div>
+                      <div className="font-medium">{task.title}</div>
                       {task.description && (
                         <div className="text-sm text-gray-500 truncate max-w-[300px]">
                           {task.description}
@@ -279,31 +327,28 @@ export const TaskManagement: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-1">
-                      <User className="w-3 h-3 text-gray-400" />
-                      <span className="text-sm">{task.assignedTo}</span>
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span>{task.assignedTo}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-1">
-                      <Calendar className="w-3 h-3 text-gray-400" />
-                      <span className={`text-sm ${
-                        new Date(task.dueDate) < new Date() && task.status !== 'completed'
-                          ? 'text-red-600 font-medium'
-                          : ''
-                      }`}>
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </span>
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{new Date(task.dueDate).toLocaleDateString()}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     {task.projectId ? (
                       <Badge variant="outline">{task.projectId}</Badge>
                     ) : (
-                      <span className="text-gray-400">-</span>
+                      <span className="text-gray-400">Personal</span>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="w-4 h-4" />
+                      </Button>
                       <Button variant="ghost" size="sm">
                         <Edit className="w-4 h-4" />
                       </Button>

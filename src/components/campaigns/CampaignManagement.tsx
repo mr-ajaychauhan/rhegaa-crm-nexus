@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -19,55 +20,80 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { 
   Plus, 
   Search, 
-  Play, 
-  Pause, 
+  Download, 
   Eye, 
   Edit, 
   Trash2,
-  Mail,
-  Share2,
-  BarChart3,
-  Target
+  Megaphone,
+  TrendingUp,
+  Users,
+  DollarSign,
+  Play,
+  Pause,
+  BarChart3
 } from 'lucide-react';
 import { Campaign } from '@/types/crm';
 
 const mockCampaigns: Campaign[] = [
   {
     id: '1',
-    name: 'Q1 Product Launch Email Campaign',
-    type: 'email',
+    name: 'Q1 Product Launch',
+    type: 'multi-channel',
     status: 'active',
-    startDate: '2024-01-15',
-    endDate: '2024-01-30',
-    targetAudience: 'Existing Customers',
-    budget: 5000,
+    startDate: '2024-01-01',
+    endDate: '2024-03-31',
+    targetAudience: 'Enterprise customers',
+    budget: 50000,
     metrics: {
-      sent: 2500,
-      opened: 875,
-      clicked: 125,
-      converted: 25,
+      sent: 10000,
+      opened: 3500,
+      clicked: 875,
+      converted: 125,
     },
-    createdAt: '2024-01-10T09:00:00Z',
+    createdAt: '2023-12-15T09:00:00Z',
   },
   {
     id: '2',
-    name: 'Social Media Awareness Campaign',
-    type: 'social',
-    status: 'active',
-    startDate: '2024-01-01',
-    endDate: '2024-01-31',
-    targetAudience: 'New Prospects',
-    budget: 10000,
+    name: 'Newsletter February',
+    type: 'email',
+    status: 'completed',
+    startDate: '2024-02-01',
+    endDate: '2024-02-28',
+    targetAudience: 'All subscribers',
     metrics: {
       sent: 5000,
-      opened: 1250,
-      clicked: 250,
+      opened: 2000,
+      clicked: 500,
       converted: 50,
     },
-    createdAt: '2024-01-01T09:00:00Z',
+    createdAt: '2024-01-25T10:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'Social Media Boost',
+    type: 'social',
+    status: 'paused',
+    startDate: '2024-01-15',
+    targetAudience: 'SMB prospects',
+    budget: 15000,
+    metrics: {
+      sent: 25000,
+      opened: 8750,
+      clicked: 1250,
+      converted: 75,
+    },
+    createdAt: '2024-01-10T14:00:00Z',
   },
 ];
 
@@ -76,6 +102,7 @@ export const CampaignManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const getStatusColor = (status: Campaign['status']) => {
     const colors = {
@@ -84,16 +111,16 @@ export const CampaignManagement: React.FC = () => {
       paused: 'bg-yellow-100 text-yellow-800',
       completed: 'bg-blue-100 text-blue-800',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status];
   };
 
-  const getTypeIcon = (type: Campaign['type']) => {
-    switch (type) {
-      case 'email': return <Mail className="w-4 h-4" />;
-      case 'social': return <Share2 className="w-4 h-4" />;
-      case 'multi-channel': return <Target className="w-4 h-4" />;
-      default: return <BarChart3 className="w-4 h-4" />;
-    }
+  const getTypeColor = (type: Campaign['type']) => {
+    const colors = {
+      email: 'bg-purple-100 text-purple-800',
+      social: 'bg-blue-100 text-blue-800',
+      'multi-channel': 'bg-indigo-100 text-indigo-800',
+    };
+    return colors[type];
   };
 
   const filteredCampaigns = campaigns.filter(campaign => {
@@ -119,10 +146,73 @@ export const CampaignManagement: React.FC = () => {
           <p className="text-gray-600">Create and manage marketing campaigns</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Campaign
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export
           </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Campaign
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create New Campaign</DialogTitle>
+                <DialogDescription>
+                  Set up a new marketing campaign
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Campaign Name</label>
+                  <Input placeholder="Enter campaign name" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Type</label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="social">Social Media</SelectItem>
+                        <SelectItem value="multi-channel">Multi-Channel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Budget</label>
+                    <Input type="number" placeholder="0" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Target Audience</label>
+                  <Input placeholder="Describe target audience" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Start Date</label>
+                    <Input type="date" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">End Date</label>
+                    <Input type="date" />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => setIsCreateDialogOpen(false)}>
+                    Create Campaign
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -131,7 +221,7 @@ export const CampaignManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
-            <BarChart3 className="w-4 h-4 text-muted-foreground" />
+            <Megaphone className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCampaigns}</div>
@@ -141,30 +231,31 @@ export const CampaignManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
-            <Play className="w-4 h-4 text-green-500" />
+            <TrendingUp className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeCampaigns}</div>
+            <div className="text-2xl font-bold text-green-600">{activeCampaigns}</div>
             <p className="text-xs text-muted-foreground">Currently running</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+            <DollarSign className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalBudget.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">All campaigns</p>
+            <p className="text-xs text-muted-foreground">Allocated budget</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversions</CardTitle>
-            <Target className="w-4 h-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Conversions</CardTitle>
+            <Users className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalConversions}</div>
-            <p className="text-xs text-muted-foreground">Total conversions</p>
+            <div className="text-2xl font-bold text-blue-600">{totalConversions}</div>
+            <p className="text-xs text-muted-foreground">Across all campaigns</p>
           </CardContent>
         </Card>
       </div>
@@ -223,13 +314,12 @@ export const CampaignManagement: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Campaign Name</TableHead>
+                <TableHead>Campaign</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Audience</TableHead>
                 <TableHead>Budget</TableHead>
                 <TableHead>Performance</TableHead>
-                <TableHead>Dates</TableHead>
+                <TableHead>Duration</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -237,39 +327,30 @@ export const CampaignManagement: React.FC = () => {
               {filteredCampaigns.map((campaign) => (
                 <TableRow key={campaign.id}>
                   <TableCell>
-                    <div className="font-medium">{campaign.name}</div>
+                    <div>
+                      <div className="font-medium">{campaign.name}</div>
+                      <div className="text-sm text-gray-500">{campaign.targetAudience}</div>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      {getTypeIcon(campaign.type)}
-                      <span className="capitalize">{campaign.type}</span>
-                    </div>
+                    <Badge className={getTypeColor(campaign.type)}>
+                      {campaign.type.replace('-', ' ')}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(campaign.status)}>
                       {campaign.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{campaign.targetAudience}</TableCell>
                   <TableCell>
                     {campaign.budget ? `$${campaign.budget.toLocaleString()}` : '-'}
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm space-y-1">
-                      <div>
-                        <span className="text-gray-500">Sent:</span> {campaign.metrics.sent.toLocaleString()}
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Opened:</span> {campaign.metrics.opened.toLocaleString()} 
-                        <span className="text-xs text-gray-400">
-                          ({Math.round((campaign.metrics.opened / campaign.metrics.sent) * 100)}%)
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Converted:</span> {campaign.metrics.converted}
-                        <span className="text-xs text-gray-400">
-                          ({Math.round((campaign.metrics.converted / campaign.metrics.sent) * 100)}%)
-                        </span>
+                    <div className="text-sm">
+                      <div>Sent: {campaign.metrics.sent.toLocaleString()}</div>
+                      <div>Conversions: {campaign.metrics.converted}</div>
+                      <div className="text-green-600">
+                        Rate: {((campaign.metrics.converted / campaign.metrics.sent) * 100).toFixed(2)}%
                       </div>
                     </div>
                   </TableCell>
@@ -277,27 +358,23 @@ export const CampaignManagement: React.FC = () => {
                     <div className="text-sm">
                       <div>{new Date(campaign.startDate).toLocaleDateString()}</div>
                       {campaign.endDate && (
-                        <div className="text-gray-500">to {new Date(campaign.endDate).toLocaleDateString()}</div>
+                        <div className="text-gray-500">
+                          to {new Date(campaign.endDate).toLocaleDateString()}
+                        </div>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
                       <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
+                        <BarChart3 className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        {campaign.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                       </Button>
                       <Button variant="ghost" size="sm">
                         <Edit className="w-4 h-4" />
                       </Button>
-                      {campaign.status === 'active' ? (
-                        <Button variant="ghost" size="sm">
-                          <Pause className="w-4 h-4" />
-                        </Button>
-                      ) : (
-                        <Button variant="ghost" size="sm">
-                          <Play className="w-4 h-4" />
-                        </Button>
-                      )}
                       <Button variant="ghost" size="sm">
                         <Trash2 className="w-4 h-4" />
                       </Button>
