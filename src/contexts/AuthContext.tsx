@@ -201,7 +201,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getAllUsers = () => allUsers;
 
   const hasPermission = (resource: string, action: string) => {
-    if (!authState.user?.role) return false;
+    // Add null checks to prevent the error
+    if (!authState.user?.role?.permissions) return false;
     return authState.user.role.permissions.some(
       permission => permission.resource === resource && permission.action === action
     );
