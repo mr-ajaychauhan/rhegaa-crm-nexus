@@ -19,6 +19,8 @@ import {
   ChevronRight,
   CheckSquare,
   Megaphone,
+  Shield,
+  UserCog,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,27 +32,29 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, roles: ['user', 'manager', 'admin'] },
-  { id: 'leads', label: 'Leads', icon: UserPlus, roles: ['user', 'manager', 'admin'] },
-  { id: 'contacts', label: 'Contacts', icon: Users, roles: ['user', 'manager', 'admin'] },
-  { id: 'accounts', label: 'Accounts', icon: Building2, roles: ['user', 'manager', 'admin'] },
-  { id: 'opportunities', label: 'Opportunities', icon: Target, roles: ['user', 'manager', 'admin'] },
-  { id: 'calendar', label: 'Calendar', icon: Calendar, roles: ['user', 'manager', 'admin'] },
-  { id: 'emails', label: 'Email Center', icon: Mail, roles: ['user', 'manager', 'admin'] },
-  { id: 'calls', label: 'Call Center', icon: Phone, roles: ['user', 'manager', 'admin'] },
-  { id: 'tasks', label: 'Tasks', icon: CheckSquare, roles: ['user', 'manager', 'admin'] },
-  { id: 'products', label: 'Products & Services', icon: Briefcase, roles: ['manager', 'admin'] },
-  { id: 'campaigns', label: 'Campaigns', icon: Megaphone, roles: ['manager', 'admin'] },
-  { id: 'quotes', label: 'Quotes', icon: FileText, roles: ['user', 'manager', 'admin'] },
-  { id: 'reports', label: 'Reports', icon: BarChart3, roles: ['manager', 'admin'] },
-  { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
+  { id: 'dashboard', label: 'Dashboard', icon: Home, permissions: { resource: 'dashboard', action: 'read' } },
+  { id: 'leads', label: 'Leads', icon: UserPlus, permissions: { resource: 'leads', action: 'read' } },
+  { id: 'contacts', label: 'Contacts', icon: Users, permissions: { resource: 'contacts', action: 'read' } },
+  { id: 'accounts', label: 'Accounts', icon: Building2, permissions: { resource: 'accounts', action: 'read' } },
+  { id: 'opportunities', label: 'Opportunities', icon: Target, permissions: { resource: 'opportunities', action: 'read' } },
+  { id: 'calendar', label: 'Calendar', icon: Calendar, permissions: { resource: 'calendar', action: 'read' } },
+  { id: 'emails', label: 'Email Center', icon: Mail, permissions: { resource: 'emails', action: 'read' } },
+  { id: 'calls', label: 'Call Center', icon: Phone, permissions: { resource: 'calls', action: 'read' } },
+  { id: 'tasks', label: 'Tasks', icon: CheckSquare, permissions: { resource: 'tasks', action: 'read' } },
+  { id: 'products', label: 'Products & Services', icon: Briefcase, permissions: { resource: 'products', action: 'read' } },
+  { id: 'campaigns', label: 'Campaigns', icon: Megaphone, permissions: { resource: 'campaigns', action: 'read' } },
+  { id: 'quotes', label: 'Quotes', icon: FileText, permissions: { resource: 'quotes', action: 'read' } },
+  { id: 'users', label: 'User Management', icon: UserCog, permissions: { resource: 'users', action: 'read' } },
+  { id: 'roles', label: 'Role Management', icon: Shield, permissions: { resource: 'roles', action: 'read' } },
+  { id: 'reports', label: 'Reports', icon: BarChart3, permissions: { resource: 'reports', action: 'read' } },
+  { id: 'settings', label: 'Settings', icon: Settings, permissions: { resource: 'settings', action: 'read' } },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, collapsed }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
 
   const filteredMenuItems = menuItems.filter(item => 
-    item.roles.includes(user?.role || 'user')
+    hasPermission(item.permissions.resource, item.permissions.action)
   );
 
   return (
@@ -85,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, collap
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 capitalize">{user?.role}</p>
+              <p className="text-xs text-gray-400">{user?.role?.name}</p>
             </div>
           )}
         </div>
