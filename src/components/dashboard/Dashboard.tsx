@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { DashboardWidget } from './DashboardWidget';
 import { Button } from '@/components/ui/button';
-import { Plus, Layout } from 'lucide-react';
+import { Plus, Layout, Shuffle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Dialog,
@@ -49,6 +50,23 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       title,
     };
     setWidgets([...widgets, newWidget]);
+  };
+
+  const handleDragEnd = (result: any) => {
+    if (!result.destination) {
+      return;
+    }
+
+    const items = Array.from(widgets);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setWidgets(items);
+  };
+
+  const shuffleWidgets = () => {
+    const shuffled = [...widgets].sort(() => Math.random() - 0.5);
+    setWidgets(shuffled);
   };
 
   return (
@@ -102,6 +120,10 @@ export const Dashboard: React.FC<DashboardProps> = () => {
               </div>
             </DialogContent>
           </Dialog>
+          <Button variant="outline" onClick={shuffleWidgets}>
+            <Shuffle className="w-4 h-4 mr-2" />
+            Shuffle
+          </Button>
           <Button variant="outline">
             <Layout className="w-4 h-4 mr-2" />
             Save Layout
@@ -149,17 +171,51 @@ export const Dashboard: React.FC<DashboardProps> = () => {
         </Card>
       </div>
 
-      {/* Widgets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {widgets.map((widget) => (
-          <DashboardWidget
-            key={widget.id}
-            id={widget.id}
-            type={widget.type}
-            title={widget.title}
-            onRemove={handleRemoveWidget}
-          />
-        ))}
+      {/* Draggable Widgets Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Dashboard Widgets</h2>
+          <p className="text-sm text-gray-500">Drag widgets to reorder them</p>
+        </div>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="widgets">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {widgets.map((widget, index) => (
+                  <Draggable key={widget.id} draggableId={widget.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className={`transform transition-all duration-200 ${
+                          snapshot.isDragging 
+                            ? 'scale-105 shadow-lg rotate-2 z-50' 
+                            : 'hover:scale-102'
+                        }`}
+                        style={{
+                          ...provided.draggableProps.style,
+                        }}
+                      >
+                        <DashboardWidget
+                          id={widget.id}
+                          type={widget.type}
+                          title={widget.title}
+                          onRemove={handleRemoveWidget}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     </div>
   );

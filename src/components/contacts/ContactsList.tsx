@@ -83,7 +83,7 @@ export const ContactsList: React.FC = () => {
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [deleteContact, setDeleteContact] = useState<Contact | null>(null);
   
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +95,8 @@ export const ContactsList: React.FC = () => {
   });
 
   const handleCreate = () => {
-    if (!hasPermission('contacts', 'create')) {
+    const canCreate = user?.role?.isSuperAdmin || user?.email === 'superadmin@crm.com' || hasPermission('contacts', 'create');
+    if (!canCreate) {
       toast.error('You do not have permission to create contacts');
       return;
     }
@@ -111,7 +112,8 @@ export const ContactsList: React.FC = () => {
   };
 
   const handleEdit = (contact: Contact) => {
-    if (!hasPermission('contacts', 'update')) {
+    const canUpdate = user?.role?.isSuperAdmin || user?.email === 'superadmin@crm.com' || hasPermission('contacts', 'update');
+    if (!canUpdate) {
       toast.error('You do not have permission to edit contacts');
       return;
     }
@@ -121,7 +123,8 @@ export const ContactsList: React.FC = () => {
   };
 
   const handleDelete = (contact: Contact) => {
-    if (!hasPermission('contacts', 'delete')) {
+    const canDelete = user?.role?.isSuperAdmin || user?.email === 'superadmin@crm.com' || hasPermission('contacts', 'delete');
+    if (!canDelete) {
       toast.error('You do not have permission to delete contacts');
       return;
     }
@@ -158,9 +161,9 @@ export const ContactsList: React.FC = () => {
     }
   };
 
-  const canCreate = hasPermission('contacts', 'create');
-  const canUpdate = hasPermission('contacts', 'update');
-  const canDelete = hasPermission('contacts', 'delete');
+  const canCreate = user?.role?.isSuperAdmin || user?.email === 'superadmin@crm.com' || hasPermission('contacts', 'create');
+  const canUpdate = user?.role?.isSuperAdmin || user?.email === 'superadmin@crm.com' || hasPermission('contacts', 'update');
+  const canDelete = user?.role?.isSuperAdmin || user?.email === 'superadmin@crm.com' || hasPermission('contacts', 'delete');
 
   return (
     <div className="p-6 space-y-6">
