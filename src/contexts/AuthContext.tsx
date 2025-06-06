@@ -11,6 +11,8 @@ interface AuthContextType extends AuthState {
   updateUser: (id: string, userData: Partial<User>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   getAllUsers: () => User[];
+  getAllCustomers: () => User[];
+  getUsersByTenant: (tenantId: string) => User[];
   hasPermission: (resource: string, action: string) => boolean;
 }
 

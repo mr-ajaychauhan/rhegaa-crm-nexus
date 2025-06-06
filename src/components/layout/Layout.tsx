@@ -16,6 +16,7 @@ import { CampaignManagement } from '../campaigns/CampaignManagement';
 import { QuoteManagement } from '../quotes/QuoteManagement';
 import { UserManagement } from '../users/UserManagement';
 import { RoleManagement } from '../roles/RoleManagement';
+import { CustomerManagement } from '../customers/CustomerManagement';
 import { cn } from '@/lib/utils';
 
 export const Layout: React.FC = () => {
@@ -52,6 +53,8 @@ export const Layout: React.FC = () => {
         return <UserManagement />;
       case 'roles':
         return <RoleManagement />;
+      case 'customers':
+        return <CustomerManagement />;
       case 'reports':
         return (
           <div className="p-6">
@@ -87,6 +90,7 @@ export const Layout: React.FC = () => {
       quotes: 'Quotes',
       users: 'User Management',
       roles: 'Role Management',
+      customers: 'Customer Management',
       reports: 'Reports',
       settings: 'Settings',
     };

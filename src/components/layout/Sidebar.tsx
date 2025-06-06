@@ -46,6 +46,7 @@ const menuItems = [
   { id: 'quotes', label: 'Quotes', icon: FileText, permissions: { resource: 'quotes', action: 'read' } },
   { id: 'users', label: 'User Management', icon: UserCog, permissions: { resource: 'users', action: 'read' } },
   { id: 'roles', label: 'Role Management', icon: Shield, permissions: { resource: 'roles', action: 'read' } },
+  { id: 'customers', label: 'Customer Management', icon: Building2, permissions: { resource: 'customers', action: 'read' } },
   { id: 'reports', label: 'Reports', icon: BarChart3, permissions: { resource: 'reports', action: 'read' } },
   { id: 'settings', label: 'Settings', icon: Settings, permissions: { resource: 'settings', action: 'read' } },
 ];

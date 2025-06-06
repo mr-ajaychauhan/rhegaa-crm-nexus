@@ -13,6 +13,7 @@ export interface Role {
   description: string;
   permissions: Permission[];
   isDefault?: boolean;
+  isSuperAdmin?: boolean;
   createdAt: string;
   updatedAt: string;
 }
