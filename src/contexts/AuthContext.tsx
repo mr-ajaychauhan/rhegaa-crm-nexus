@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState, CreateUserData } from '@/types/auth';
 import { useRoles } from './RoleContext';
@@ -70,23 +69,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (!existingUser) {
       // Create mock user for demo
+      const superAdminRole = roles.find(r => r.name === 'Super Admin');
       const adminRole = roles.find(r => r.name === 'Administrator');
       const managerRole = roles.find(r => r.name === 'Sales Manager');
       const userRole = roles.find(r => r.name === 'Sales Representative');
       
       let role = userRole;
-      if (email.includes('admin')) role = adminRole;
+      if (email.includes('superadmin')) role = superAdminRole;
+      else if (email.includes('admin')) role = adminRole;
       else if (email.includes('manager')) role = managerRole;
 
       existingUser = {
         id: Date.now().toString(),
-        name: email.includes('admin') ? 'Admin User' : email.includes('manager') ? 'Manager User' : 'Sales User',
+        name: email.includes('superadmin') ? 'Super Admin' : email.includes('admin') ? 'Admin User' : email.includes('manager') ? 'Manager User' : 'Sales User',
         email,
         roleId: role?.id || 'user',
         role: role || userRole!,
-        tenantId: 'tenant_123',
+        tenantId: email.includes('superadmin') ? 'super_tenant' : 'tenant_123',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        department: 'Sales',
+        department: email.includes('superadmin') ? 'System Administration' : 'Sales',
         directReports: email.includes('manager') ? ['user1', 'user2'] : undefined,
         isActive: true,
         createdAt: new Date().toISOString(),
@@ -202,6 +203,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getAllUsers = () => allUsers;
 
+  const getAllCustomers = () => {
+    // Return users who are admins of their own tenants (customer accounts)
+    return allUsers.filter(user => 
+      user.role.name === 'Administrator' && 
+      user.tenantId !== 'super_tenant'
+    );
+  };
+
+  const getUsersByTenant = (tenantId: string) => {
+    return allUsers.filter(user => user.tenantId === tenantId);
+  };
+
   const hasPermission = (resource: string, action: string) => {
     // Add null checks to prevent the error
     if (!authState.user?.role?.permissions) return false;
@@ -220,6 +233,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateUser,
       deleteUser,
       getAllUsers,
+      getAllCustomers,
+      getUsersByTenant,
       hasPermission,
     }}>
       {children}
