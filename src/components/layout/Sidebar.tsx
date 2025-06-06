@@ -54,9 +54,14 @@ const menuItems = [
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, collapsed }) => {
   const { user, logout, hasPermission } = useAuth();
 
-  const filteredMenuItems = menuItems.filter(item => 
-    hasPermission(item.permissions.resource, item.permissions.action)
-  );
+  const filteredMenuItems = menuItems.filter(item => {
+    // Super Admin can see everything
+    if (user?.role?.isSuperAdmin || user?.role?.name === 'Super Admin') {
+      return true;
+    }
+    // Regular permission check
+    return hasPermission(item.permissions.resource, item.permissions.action);
+  });
 
   return (
     <div className={cn(

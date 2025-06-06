@@ -52,8 +52,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (storedUsers) {
       setAllUsers(JSON.parse(storedUsers));
+    } else {
+      // Create default super admin user if no users exist
+      createDefaultSuperAdmin();
     }
-  }, []);
+  }, [roles]);
+
+  const createDefaultSuperAdmin = () => {
+    if (roles.length === 0) return;
+    
+    const superAdminRole = roles.find(r => r.name === 'Super Admin');
+    if (!superAdminRole) return;
+
+    const defaultSuperAdmin: User = {
+      id: 'superadmin_001',
+      name: 'Super Administrator',
+      email: 'superadmin@crm.com',
+      roleId: superAdminRole.id,
+      role: superAdminRole,
+      tenantId: 'super_tenant',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
+      department: 'System Administration',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const defaultUsers = [defaultSuperAdmin];
+    setAllUsers(defaultUsers);
+    localStorage.setItem('crm_all_users', JSON.stringify(defaultUsers));
+  };
 
   const login = async (email: string, password: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
@@ -75,24 +103,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userRole = roles.find(r => r.name === 'Sales Representative');
       
       let role = userRole;
-      if (email.includes('superadmin')) role = superAdminRole;
+      if (email === 'superadmin@crm.com' || email.includes('superadmin')) role = superAdminRole;
       else if (email.includes('admin')) role = adminRole;
       else if (email.includes('manager')) role = managerRole;
 
       existingUser = {
         id: Date.now().toString(),
-        name: email.includes('superadmin') ? 'Super Admin' : email.includes('admin') ? 'Admin User' : email.includes('manager') ? 'Manager User' : 'Sales User',
+        name: email === 'superadmin@crm.com' ? 'Super Administrator' : email.includes('superadmin') ? 'Super Admin' : email.includes('admin') ? 'Admin User' : email.includes('manager') ? 'Manager User' : 'Sales User',
         email,
         roleId: role?.id || 'user',
         role: role || userRole!,
-        tenantId: email.includes('superadmin') ? 'super_tenant' : 'tenant_123',
+        tenantId: email === 'superadmin@crm.com' || email.includes('superadmin') ? 'super_tenant' : 'tenant_123',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        department: email.includes('superadmin') ? 'System Administration' : 'Sales',
+        department: email === 'superadmin@crm.com' || email.includes('superadmin') ? 'System Administration' : 'Sales',
         directReports: email.includes('manager') ? ['user1', 'user2'] : undefined,
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+
+      // Add new user to the list
+      const updatedUsers = [...users, existingUser];
+      setAllUsers(updatedUsers);
+      localStorage.setItem('crm_all_users', JSON.stringify(updatedUsers));
     }
 
     localStorage.setItem('crm_user', JSON.stringify(existingUser));
@@ -216,6 +249,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const hasPermission = (resource: string, action: string) => {
+    // Super Admin always has all permissions
+    if (authState.user?.role?.isSuperAdmin || authState.user?.role?.name === 'Super Admin') {
+      return true;
+    }
+    
     // Add null checks to prevent the error
     if (!authState.user?.role?.permissions) return false;
     return authState.user.role.permissions.some(

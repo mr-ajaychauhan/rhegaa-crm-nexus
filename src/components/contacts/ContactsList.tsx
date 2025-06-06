@@ -19,8 +19,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Plus, Search, Download, Eye, Edit, Trash2, Users, Mail, Phone } from 'lucide-react';
 import { Contact } from '@/types/crm';
+import { ContactForm } from './ContactForm';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const mockContacts: Contact[] = [
   {
@@ -65,6 +78,12 @@ export const ContactsList: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>(mockContacts);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState<string>('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [deleteContact, setDeleteContact] = useState<Contact | null>(null);
+  
+  const { hasPermission } = useAuth();
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -74,6 +93,74 @@ export const ContactsList: React.FC = () => {
     
     return matchesSearch && matchesDepartment;
   });
+
+  const handleCreate = () => {
+    if (!hasPermission('contacts', 'create')) {
+      toast.error('You do not have permission to create contacts');
+      return;
+    }
+    setSelectedContact(null);
+    setFormMode('create');
+    setIsFormOpen(true);
+  };
+
+  const handleView = (contact: Contact) => {
+    setSelectedContact(contact);
+    setFormMode('view');
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (contact: Contact) => {
+    if (!hasPermission('contacts', 'update')) {
+      toast.error('You do not have permission to edit contacts');
+      return;
+    }
+    setSelectedContact(contact);
+    setFormMode('edit');
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (contact: Contact) => {
+    if (!hasPermission('contacts', 'delete')) {
+      toast.error('You do not have permission to delete contacts');
+      return;
+    }
+    setDeleteContact(contact);
+  };
+
+  const confirmDelete = () => {
+    if (deleteContact) {
+      setContacts(prev => prev.filter(c => c.id !== deleteContact.id));
+      toast.success('Contact deleted successfully');
+      setDeleteContact(null);
+    }
+  };
+
+  const handleFormSubmit = (contactData: Partial<Contact>) => {
+    if (formMode === 'create') {
+      const newContact: Contact = {
+        ...contactData,
+        id: Date.now().toString(),
+        accountId: '1', // Default account
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Contact;
+      
+      setContacts(prev => [...prev, newContact]);
+      toast.success('Contact created successfully');
+    } else if (formMode === 'edit' && selectedContact) {
+      setContacts(prev => prev.map(contact => 
+        contact.id === selectedContact.id 
+          ? { ...contact, ...contactData, updatedAt: new Date().toISOString() }
+          : contact
+      ));
+      toast.success('Contact updated successfully');
+    }
+  };
+
+  const canCreate = hasPermission('contacts', 'create');
+  const canUpdate = hasPermission('contacts', 'update');
+  const canDelete = hasPermission('contacts', 'delete');
 
   return (
     <div className="p-6 space-y-6">
@@ -88,10 +175,12 @@ export const ContactsList: React.FC = () => {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Contact
-          </Button>
+          {canCreate && (
+            <Button onClick={handleCreate}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Contact
+            </Button>
+          )}
         </div>
       </div>
 
@@ -225,15 +314,19 @@ export const ContactsList: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleView(contact)}>
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      {canUpdate && (
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(contact)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(contact)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -242,6 +335,32 @@ export const ContactsList: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Contact Form Dialog */}
+      <ContactForm
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        contact={selectedContact}
+        mode={formMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteContact} onOpenChange={() => setDeleteContact(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the contact
+              "{deleteContact?.name}" from your database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
